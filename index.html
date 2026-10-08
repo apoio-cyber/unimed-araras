@@ -3,15 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Inclusão Unimed Araras</title>
+<title>Movimentação Unimed Araras</title>
 <link rel="stylesheet" href="css/estilo.css">
 </head>
 <body>
 <header class="topo">
   <div class="wrap topo-in">
     <div>
-      <h1>Inclusão Unimed Anhanguera</h1>
-      <p>Cucinare Pro Alimentação Ltda · Atendimento Araras/SP</p>
+      <h1>Movimentação Unimed Anhanguera</h1>
+      <p>Cucinare Pro Alimentação Ltda · Atendimento Araras/SP <span id="modoAtual"></span></p>
     </div>
     <button type="button" id="btnConfig" class="chip">Assinaturas: <span id="cfgStatus">—</span></button>
   </div>
@@ -36,6 +36,15 @@
       <button type="button" id="cfgLimpar" class="btn ghost">Remover assinaturas deste computador</button></div>
   </section>
 
+  <section id="escolha" class="card escolha">
+    <h2>O que você vai fazer?</h2>
+    <div class="opcoes-modo">
+      <button type="button" class="modo" data-modo="inclusao"><b>Inclusão</b><span>Novo colaborador e dependentes no plano</span></button>
+      <button type="button" class="modo" data-modo="exclusao"><b>Exclusão</b><span>Desligamento, óbito ou pedido do beneficiário (preenchido pelo RH)</span></button>
+    </div>
+  </section>
+
+  <div id="modoInclusao" hidden>
   <div class="aviso">
     <strong>Atenção:</strong> a <b>Ficha de Cadastro</b> NÃO é assinada pelo colaborador — apenas pela empresa (Cucinare) e pela operadora.
     O colaborador assina somente a <b>Carta de Orientação</b> (rubrica na pág. 1 e assinatura na pág. 2) e a <b>Declaração de Saúde</b> (pág. 11).
@@ -89,11 +98,114 @@
       <b>Próximos passos:</b> imprimir e colher do colaborador: rubrica na <b>pág. 1</b>, assinatura de beneficiário na <b>pág. 2</b> e assinatura do contratante na <b>pág. 11</b>.
     </div>
   </section>
+  </div>
+
+  <div id="modoExclusao" hidden>
+    <div class="aviso">
+      <strong>Exclusão — preenchimento pelo RH.</strong> Para desligamento é obrigatório anexar o <b>Termo de Rescisão (TRCT)</b>; ao anexar, os dados do colaborador são preenchidos automaticamente (confira antes de gerar).
+      O colaborador assina a <b>Planilha de Exclusão</b> (assinatura do titular) e o <b>Termo de Ciência</b>.
+    </div>
+
+    <section class="card">
+      <h2><span class="num">1</span> Tipo de movimentação</h2>
+      <div class="radios" id="exTipo">
+        <label><input type="radio" name="exTipo" value="desligamento"> Exclusão por desligamento da empresa</label>
+        <label><input type="radio" name="exTipo" value="iniciativa"> Exclusão por iniciativa do beneficiário</label>
+        <label><input type="radio" name="exTipo" value="obito"> Exclusão por óbito</label>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2><span class="num">2</span> Termo de rescisão (TRCT)</h2>
+      <p class="ajuda">PDF do TRCT. Obrigatório para desligamento. O arquivo também é anexado ao final do PDF gerado.</p>
+      <input type="file" id="exTrct" accept="application/pdf,image/jpeg,image/png">
+      <div id="exTrctStatus" class="ajuda" style="margin-top:8px"></div>
+    </section>
+
+    <section class="card">
+      <h2><span class="num">3</span> Titular</h2>
+      <div class="grid3">
+        <label class="span2">Nome completo (sem abreviação) *<input id="exNome" style="text-transform:uppercase"></label>
+        <label>CPF *<input id="exCpf" data-mask="cpf"></label>
+        <label class="span2">Endereço completo (rua, nº, bairro, cidade/UF, CEP) *<input id="exEndereco" style="text-transform:uppercase"></label>
+        <label>Celular *<input id="exCelular" data-mask="cel" placeholder="(19) 99999-9999"></label>
+      </div>
+      <p class="ajuda" style="margin-top:12px">O titular permanece no plano?</p>
+      <div class="radios linha" id="exPermanece">
+        <label><input type="radio" name="exPerm" value="S"> Sim</label>
+        <label><input type="radio" name="exPerm" value="N"> Não</label>
+      </div>
+      <p id="exPermNao" class="ajuda" hidden>Titular não permanece: os dependentes também saem do plano automaticamente.</p>
+    </section>
+
+    <section class="card" id="exDepCard" hidden>
+      <h2><span class="num">4</span> Dependentes que permanecem <small>(até 5)</small></h2>
+      <p class="ajuda">Informe os dependentes e se cada um continua no plano.</p>
+      <div id="exDeps"></div>
+      <button type="button" class="btn ghost" id="exAddDep">+ Adicionar dependente</button>
+    </section>
+
+    <section class="card">
+      <h2><span class="num">5</span> Rescisão / óbito e contribuição</h2>
+      <div class="grid3">
+        <label>Data da rescisão / óbito <span class="req-dt">*</span><input id="exData" data-mask="data" placeholder="dd/mm/aaaa"></label>
+        <label>Tempo de contribuição (meses)<input id="exMeses" inputmode="numeric"><span class="obs">Calculado pelo TRCT quando possível</span></label>
+        <label>Data da comunicação<input id="exDataCom" readonly><span class="obs">Data de preenchimento</span></label>
+      </div>
+      <p class="ajuda" style="margin-top:14px">Motivo da extinção do contrato de trabalho (escolha uma):</p>
+      <div class="radios" id="exMotivo">
+        <label><input type="radio" name="exMotivo" value="demissao"> Demissão/Exoneração sem justa causa</label>
+        <label><input type="radio" name="exMotivo" value="aposentadoria"> Aposentadoria</label>
+        <label><input type="radio" name="exMotivo" value="outro"> Outro – especificar</label>
+      </div>
+      <label id="exMotivoOutroBox" hidden style="margin-top:6px">Especifique *<input id="exMotivoOutro" maxlength="60"></label>
+
+      <p class="ajuda" style="margin-top:14px">Permaneceu na mesma empresa após aposentadoria, contribuindo para o plano de saúde?</p>
+      <div class="radios linha">
+        <label><input type="radio" name="exApos" value="S"> Sim</label>
+        <label><input type="radio" name="exApos" value="N"> Não</label>
+      </div>
+
+      <p class="ajuda" style="margin-top:14px">Contribuição para o plano de saúde (coparticipação ou franquia não equivale à contribuição):</p>
+      <div class="radios" id="exContrib">
+        <label><input type="radio" name="exContrib" value="integral"> Não há, pois a empresa subsidia integralmente a mensalidade do TITULAR</label>
+        <label><input type="radio" name="exContrib" value="parcial"> Há subsídio parcial da empresa para a mensalidade do titular</label>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2><span class="num">6</span> Opção do titular (RN 488)</h2>
+      <p class="ajuda">Em resposta à comunicação da empresa sobre o direito de manter a cobertura assumindo o pagamento integral, o titular informa que:</p>
+      <div class="radios" id="exOpcao">
+        <label><input type="radio" name="exOpcao" value="opto"> Opto pela continuidade no plano na condição de vínculo empregatício inativo</label>
+        <label><input type="radio" name="exOpcao" value="naoOpto"> NÃO opto pela continuidade no plano na condição de vínculo empregatício inativo</label>
+      </div>
+      <label class="check" style="margin-top:14px"><input type="checkbox" id="exTermo"> Incluir o Termo de Ciência (CAD001)</label>
+    </section>
+
+    <section class="card">
+      <h2><span class="num">7</span> Outros documentos <small>(opcional)</small></h2>
+      <input type="file" id="exOutros" accept="application/pdf,image/jpeg,image/png" multiple>
+      <div id="exOutrosLista" class="ajuda"></div>
+    </section>
+
+    <section class="card final">
+      <div id="exErros" class="erros" hidden></div>
+      <button type="button" id="exGerar" class="btn grande">Gerar PDF de exclusão</button>
+      <p class="ajuda" id="exStatus"></p>
+      <div id="exPos" class="aviso" hidden>
+        <b>Próximos passos:</b> imprimir e colher a assinatura do titular na <b>Planilha de Exclusão</b> e no <b>Termo de Ciência</b>.
+      </div>
+    </section>
+  </div>
 </main>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <script src="js/perguntas.js"></script>
 <script src="js/preencher.js"></script>
 <script src="js/app.js"></script>
+<script src="js/exclusao.js"></script>
+<script src="js/trct.js"></script>
+<script src="js/app-exclusao.js"></script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-# Inclusão Unimed Araras
+# Movimentação Unimed Araras (inclusão e exclusão)
 
 Formulário web que gera, em um único PDF, a **Carta de Orientação + Declaração de Saúde** e a **Ficha de Cadastro** da Unimed Anhanguera já preenchidas para inclusão de colaboradores da Cucinare Pro Alimentação Ltda.
 
@@ -16,3 +16,9 @@ Formulário web que gera, em um único PDF, a **Carta de Orientação + Declara�
 
 ## O colaborador assina
 Rubrica na pág. 1, assinatura de beneficiário na pág. 2 e assinatura do contratante na pág. 11. A Ficha de Cadastro é assinada só pela empresa e pela operadora.
+
+## Exclusão (preenchida pelo RH)
+- Gera a Planilha de Movimentação - Exclusão (CAD006) + Termo de Ciência (CAD001) + TRCT anexado.
+- Ao anexar o TRCT em PDF (com texto), lê automaticamente nome, CPF, endereço, data de afastamento, causa e tempo de contribuição. PDFs escaneados precisam de preenchimento manual.
+- Titular "Não permanece" → dependentes saem automaticamente; "Sim" → informar os dependentes (nome completo) e se cada um permanece.
+- Data da comunicação = data de preenchimento (dd/mm/aa). Termo: Araras, data e hora do preenchimento.

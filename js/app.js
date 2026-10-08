@@ -63,6 +63,7 @@
     data: function (v) { v = so(v).slice(0, 8); return v.replace(/(\d{2})(\d)/, '$1/$2').replace(/(\d{2})(\d)/, '$1/$2'); },
     mesano: function (v) { v = so(v).slice(0, 6); return v.replace(/(\d{2})(\d)/, '$1/$2'); },
     sus: function (v) { v = so(v).slice(0, 15); return v.replace(/(\d{3})(\d)/, '$1 $2').replace(/(\d{4})(\d)/, '$1 $2').replace(/(\d{4})(\d)/, '$1 $2'); },
+    cel: function (v) { v = so(v).slice(0, 11); return v.length > 2 ? '(' + v.slice(0, 2) + ') ' + (v.length > 10 ? v.slice(2, 7) + '-' + v.slice(7) : v.length > 6 ? v.slice(2, 6) + '-' + v.slice(6) : v.slice(2)) : v; },
     num1: function (v) { return v.replace(/[^\d,\.]/g, '').replace('.', ',').slice(0, 6); }
   };
   document.addEventListener('input', function (e) {
