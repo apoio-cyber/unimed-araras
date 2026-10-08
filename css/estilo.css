@@ -81,3 +81,4 @@ label.check input{width:auto}
 .dep-ex{display:grid;grid-template-columns:1fr 200px 90px;gap:10px;align-items:end;margin-bottom:8px}
 @media (max-width:760px){.opcoes-modo{grid-template-columns:1fr}.dep-ex{grid-template-columns:1fr}}
 .auto{background:#fffbe6;border-color:var(--amar-b)}
+[hidden]{display:none!important}
