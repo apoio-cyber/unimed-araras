@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inclusão Unimed Araras</title>
+<link rel="stylesheet" href="css/estilo.css">
+</head>
+<body>
+<header class="topo">
+  <div class="wrap topo-in">
+    <div>
+      <h1>Inclusão Unimed Anhanguera</h1>
+      <p>Cucinare Pro Alimentação Ltda · Atendimento Araras/SP</p>
+    </div>
+    <button type="button" id="btnConfig" class="chip">Assinaturas: <span id="cfgStatus">—</span></button>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section id="secConfig" class="card destaque" hidden>
+    <h2>Configurar assinaturas (uma vez por computador)</h2>
+    <p>As imagens ficam salvas apenas neste navegador e não são enviadas para a internet.</p>
+    <div class="grid2">
+      <label>Assinatura do intermediário (Wlademir)
+        <input type="file" id="cfgSig" accept="image/*">
+        <img id="prevSig" class="prev" alt="">
+      </label>
+      <label>Carimbo + assinatura da empresa (Cucinare)
+        <input type="file" id="cfgStamp" accept="image/*">
+        <img id="prevStamp" class="prev" alt="">
+      </label>
+    </div>
+    <div class="acoes"><button type="button" id="cfgFechar" class="btn">Fechar</button>
+      <button type="button" id="cfgLimpar" class="btn ghost">Remover assinaturas deste computador</button></div>
+  </section>
+
+  <div class="aviso">
+    <strong>Atenção:</strong> a <b>Ficha de Cadastro</b> NÃO é assinada pelo colaborador — apenas pela empresa (Cucinare) e pela operadora.
+    O colaborador assina somente a <b>Carta de Orientação</b> (rubrica na pág. 1 e assinatura na pág. 2) e a <b>Declaração de Saúde</b> (pág. 11).
+  </div>
+
+  <section class="card">
+    <h2><span class="num">1</span> Dados do titular</h2>
+    <div class="grid3" id="titular"></div>
+    <label class="curto">Data de preenchimento <input id="dataPreench" data-mask="data"></label>
+  </section>
+
+  <section class="card">
+    <h2><span class="num">2</span> Dependentes <small>(até 3)</small></h2>
+    <div id="dependentes"></div>
+    <button type="button" class="btn ghost" id="btnAddDep">+ Adicionar dependente</button>
+  </section>
+
+  <section class="card">
+    <h2><span class="num">3</span> Declaração de saúde</h2>
+    <p class="ajuda">Responda <b>S</b> (sim) ou <b>N</b> (não) para cada pessoa. Ao marcar <b>S</b> é obrigatório informar o nome da doença, se está em tratamento e quando houve o diagnóstico (mês/ano).</p>
+    <div id="atalhos" class="atalhos"></div>
+    <div id="questionario"></div>
+    <label>Comentários (opcional — aparece no campo de comentários da declaração)
+      <textarea id="comentarios" rows="2" maxlength="300"></textarea></label>
+  </section>
+
+  <section class="card">
+    <h2><span class="num">4</span> Orientação médica</h2>
+    <p class="ajuda">Declaro que a operadora disponibilizou a orientação com médico orientador presencialmente e opto por (escolha apenas uma):</p>
+    <div class="radios" id="orientacao">
+      <label><input type="radio" name="orient" value="dispensar"> Dispensar a orientação presencial</label>
+      <label><input type="radio" name="orient" value="operadora"> Médico indicado pela Operadora</label>
+      <label><input type="radio" name="orient" value="particular"> Particular</label>
+    </div>
+    <div id="avisoMedico" class="aviso forte" hidden>
+      Com orientação médica, gere e salve o PDF como está. A <b>última página da Declaração de Saúde</b> deverá ser preenchida, assinada e <b>carimbada pelo médico orientador</b>.
+    </div>
+  </section>
+
+  <section class="card">
+    <h2><span class="num">5</span> Documentos</h2>
+    <p class="ajuda">Anexe aqui (opcional) — os arquivos são incluídos ao final do PDF. Aceita foto (JPG/PNG) ou PDF.</p>
+    <div id="documentos"></div>
+  </section>
+
+  <section class="card final">
+    <div id="erros" class="erros" hidden></div>
+    <button type="button" id="btnGerar" class="btn grande">Gerar PDF preenchido</button>
+    <p class="ajuda" id="statusGerar"></p>
+    <div id="posGerar" class="aviso" hidden>
+      <b>Próximos passos:</b> imprimir e colher do colaborador: rubrica na <b>pág. 1</b>, assinatura de beneficiário na <b>pág. 2</b> e assinatura do contratante na <b>pág. 11</b>.
+    </div>
+  </section>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script src="js/perguntas.js"></script>
+<script src="js/preencher.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
