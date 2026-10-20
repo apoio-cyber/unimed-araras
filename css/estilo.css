@@ -82,3 +82,10 @@ label.check input{width:auto}
 @media (max-width:760px){.opcoes-modo{grid-template-columns:1fr}.dep-ex{grid-template-columns:1fr}}
 .auto{background:#fffbe6;border-color:var(--amar-b)}
 [hidden]{display:none!important}
+.rodape{border-top:1px solid var(--borda);background:#fff;margin-top:8px;padding:12px 0}
+.rodape-in{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--mut)}
+.rodape .dev{display:flex;align-items:center;gap:8px}
+.rodape .dev img{height:34px;width:auto;display:block}
+.rodape .whats{display:inline-flex;align-items:center;gap:6px;color:#128c4a;font-weight:600;font-size:13px;text-decoration:none;border:1px solid #25d366;border-radius:20px;padding:6px 12px}
+.rodape .whats:hover{background:#e9fbf0}
+@media print{.rodape{display:none}}
