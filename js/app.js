@@ -3,7 +3,7 @@
   'use strict';
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var MAX_DEP = 3;
-  var LS_SIG = 'unimed_assinatura_intermediario', LS_STAMP = 'unimed_carimbo_empresa';
+  var LS_STAMP = 'unimed_carimbo_empresa';
 
   var EST_CIVIL = ['Solteiro(a)', 'Casado(a)', 'União estável', 'Divorciado(a)', 'Separado(a)', 'Viúvo(a)'];
   var PARENTESCO = ['Cônjuge', 'Companheiro(a)', 'Filho(a)', 'Enteado(a)', 'Outro'];
@@ -383,19 +383,19 @@
   function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
   function lsSet(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { alert('Não foi possível salvar a imagem neste navegador.'); return false; } }
   function statusCfg() {
-    var a = !!lsGet(LS_SIG), b = !!lsGet(LS_STAMP);
-    $('#cfgStatus').textContent = a && b ? 'configuradas ✓' : 'pendentes';
-    $('#prevSig').src = lsGet(LS_SIG) || ''; $('#prevStamp').src = lsGet(LS_STAMP) || '';
-    return a && b;
+    var b = !!lsGet(LS_STAMP);
+    $('#cfgStatus').textContent = b ? 'configurado ✓' : 'pendente';
+    $('#prevStamp').src = lsGet(LS_STAMP) || '';
+    return b;
   }
   $('#btnConfig').onclick = function () { $('#secConfig').hidden = !$('#secConfig').hidden; };
   $('#cfgFechar').onclick = function () { $('#secConfig').hidden = true; };
   $('#cfgLimpar').onclick = function () {
-    if (!confirm('Remover as assinaturas salvas neste computador?')) return;
-    try { localStorage.removeItem(LS_SIG); localStorage.removeItem(LS_STAMP); } catch (e) { }
+    if (!confirm('Remover o carimbo salvo neste computador?')) return;
+    try { localStorage.removeItem(LS_STAMP); localStorage.removeItem('unimed_assinatura_intermediario'); } catch (e) { }
     statusCfg();
   };
-  [['#cfgSig', LS_SIG], ['#cfgStamp', LS_STAMP]].forEach(function (x) {
+  [['#cfgStamp', LS_STAMP]].forEach(function (x) {
     $(x[0]).onchange = function (e) {
       var f = e.target.files[0]; if (!f) return;
       processarImagem(f).then(function (url) { lsSet(x[1], url); statusCfg(); }).catch(function (er) { alert(er.message); });
@@ -453,7 +453,7 @@
     if (semResp) erros.push('Declaração de saúde: ' + semResp + ' resposta(s) em branco (destacadas em vermelho)');
     if (semDet) erros.push('Declaração de saúde: há respostas "S" sem doença, tratamento ou diagnóstico (mês/ano) completos');
     if (!document.querySelector('input[name=orient]:checked')) erros.push('Orientação médica: escolha uma opção');
-    if (!statusCfg()) erros.push('Assinaturas não configuradas neste computador (botão "Assinaturas" no topo)');
+    if (!statusCfg()) erros.push('Carimbo da empresa não configurado neste computador (botão "Carimbo da empresa" no topo)');
     return erros;
   }
 
@@ -470,7 +470,7 @@
     if (erros.length) {
       box.innerHTML = '<b>Corrija antes de gerar:</b><ul>' + erros.map(function (e) { return '<li>' + esc(e) + '</li>'; }).join('') + '</ul>';
       box.hidden = false; box.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      if (/Assinaturas/.test(erros.join())) $('#secConfig').hidden = false;
+      if (/Carimbo/.test(erros.join())) $('#secConfig').hidden = false;
       return;
     }
     box.hidden = true;
@@ -509,7 +509,7 @@
       var avisos = [];
       var bytes = await Preencher.gerar({
         PDFLib: PDFLib, declaracao: modelos[0], cadastro: modelos[1], perguntas: PERGUNTAS,
-        assinatura: dataUrlBytes(lsGet(LS_SIG)), carimbo: dataUrlBytes(lsGet(LS_STAMP)),
+        carimbo: dataUrlBytes(lsGet(LS_STAMP)),
         anexos: anexos, onAviso: function (m) { avisos.push(m); },
         dados: {
           dataPreenchimento: $('#dataPreench').value, pessoas: pdfPessoas, respostas: respostas,
@@ -538,6 +538,7 @@
   montarCampos($('#titular'), CAMPOS_TIT, 't_');
   $('#dataPreench').value = hojeStr();
   $('#btnAddDep').onclick = addDep;
+  try { localStorage.removeItem('unimed_assinatura_intermediario'); } catch (e) { }
   statusCfg();
   if (!statusCfg()) $('#secConfig').hidden = false;
   atualizarTudo();

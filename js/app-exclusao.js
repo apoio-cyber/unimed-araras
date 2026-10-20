@@ -139,7 +139,7 @@
     if (!radio('exContrib')) { erros.push('Escolha a forma de contribuição para o plano'); marca('#exContrib'); }
     if (tipo === 'desligamento' && !radio('exOpcao')) { erros.push('Informe a opção do titular (opto / não opto)'); marca('#exOpcao'); }
     var stamp = null; try { stamp = localStorage.getItem(LS_STAMP); } catch (e) { }
-    if (!stamp) erros.push('Carimbo da empresa não configurado neste computador (botão "Assinaturas" no topo)');
+    if (!stamp) erros.push('Carimbo da empresa não configurado neste computador (botão "Carimbo da empresa" no topo)');
     return erros;
   }
 

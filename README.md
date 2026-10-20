@@ -3,11 +3,12 @@
 Formulário web que gera, em um único PDF, a **Carta de Orientação + Declaração de Saúde** e a **Ficha de Cadastro** da Unimed Anhanguera já preenchidas para inclusão de colaboradores da Cucinare Pro Alimentação Ltda.
 
 - Todo o processamento acontece no navegador: nenhum dado do colaborador é enviado para servidores.
-- As assinaturas (intermediário e carimbo da empresa) **não ficam no repositório**: são carregadas uma vez em cada computador pelo botão **Assinaturas** e ficam salvas apenas naquele navegador.
+- O carimbo da empresa **não fica no repositório**: é carregado uma vez em cada computador pelo botão **Carimbo da empresa** e fica salvo apenas naquele navegador.
+- A assinatura do intermediário (Wlademir) não é incluída: o campo sai em branco para ele assinar ao receber o formulário (nome e CPF já vêm preenchidos).
 
 ## Regras aplicadas
 - Cidade sempre **Araras** e data = data de preenchimento.
-- Intermediário: Wlademir Cavicchioli Filho, CPF 088.045.738-25.
+- Intermediário: Wlademir Cavicchioli Filho, CPF 088.045.738-25 (assinatura feita por ele depois).
 - RG em branco → usa o CPF.
 - Respostas "S" exigem doença, se está em tratamento e mês/ano do diagnóstico (vão para a tabela de Especificações; o excedente vai para uma página de continuação).
 - Agravo/CPT não são preenchidos.
