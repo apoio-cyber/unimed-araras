@@ -103,13 +103,27 @@
 
     // Nome
     var labNome = rotulo(/^(11\s*)?Nome(\s+do\s+(Trabalhador|Empregado))?:?(?=\s|$)/i) || rotulo(/^11\s+Nome\b/i);
-    r.nome = valor(labNome).replace(/^nome:?\s*/i, '');
-    if (/^\d|CPF|PIS/i.test(r.nome)) r.nome = '';
+    r.nome = valor(labNome).replace(/^nome:?\s*/i, '')
+      .replace(/^\d+\s*[-–.:]?\s*/, '');          // matrícula antes do nome: "13785 - JASIANE DE OLIVEIRA"
+    if (!/[A-ZÀ-Ú]{2,}/i.test(r.nome) || /^(CPF|PIS)/i.test(r.nome)) r.nome = '';
 
     // Endereço
     var labEnd = rotulo(/^(12\s*)?Endere[çc]o/i);
+    var labBairro = rotulo(/^(13\s*)?Bairro/i);
     var end = valor(labEnd);
-    var bairro = valor(rotulo(/^(13\s*)?Bairro/i));
+    // o número costuma ficar separado, mais à direita, na mesma linha da rua (ex.: "RUA HUGO DE CAMPOS ... 481")
+    var linhaEnd = itens.filter(function (it) { return it.s === end; })[0];
+    if (linhaEnd) {
+      var limite = labBairro ? labBairro.x - 3 : linhaEnd.x + 520;
+      itens.filter(function (it) {
+        return it !== linhaEnd && Math.abs(it.y - linhaEnd.y) <= 7 && (!labEnd || it.y > labEnd.y + 3) && it.x > linhaEnd.x + linhaEnd.w - 1 && it.x < limite && !/^\d{1,3}\s+[A-ZÀ-Ú]/i.test(it.s);
+      }).sort(function (a, b) { return a.x - b.x; }).forEach(function (it) {
+        if (!r.numero && /^(\d{1,6}[A-Z]?|S\/?N)\b/i.test(it.s)) r.numero = it.s.split(/\s+/)[0];
+        end += ', ' + it.s;
+      });
+    }
+    if (!r.numero) { var mn = /,\s*(\d{1,6}[A-Z]?|S\/?N)\b/i.exec(end); if (mn) r.numero = mn[1]; }
+    var bairro = valor(labBairro);
     var mun = valor(rotulo(/^(14\s*)?Munic[íi]pio/i));
     var uf = valor(rotulo(/^(15\s*)?UF(?=\s|$)/i)); if (!/^[A-Z]{2}$/i.test(uf)) uf = '';
     var RE_CEP = /(\d{2}\.?\d{3}\s?-?\s?\d{3})(?!\d)/;

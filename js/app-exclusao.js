@@ -88,6 +88,13 @@
       pre('#exNome', (r.nome || '').toUpperCase(), 'nome');
       pre('#exCpf', r.cpf, 'CPF');
       pre('#exEndereco', (r.endereco || '').toUpperCase(), 'endereço');
+      // campos CEP / Número (js/cep.js): preenche e deixa o ViaCEP padronizar o endereço
+      var box = $('#modoExclusao .cep-box');
+      if (box) {
+        var cNum = box.querySelector('.cep-num'), cCep = box.querySelector('.cep-cep');
+        if (r.numero && cNum && !cNum.value) { cNum.value = r.numero.toUpperCase(); cNum.classList.add('auto'); }
+        if (r.cep && cCep && !cCep.value) { cCep.value = r.cep; cCep.classList.add('auto'); cCep.dispatchEvent(new Event('input', { bubbles: true })); achou.push('CEP'); }
+      }
       pre('#exData', r.afastamento, 'data de afastamento');
       if (r.meses != null && !$('#exMeses').value) { $('#exMeses').value = r.meses; achou.push('tempo de contribuição'); }
       if (!radio('exTipo')) setRadio('exTipo', 'desligamento');
