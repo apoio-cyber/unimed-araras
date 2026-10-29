@@ -204,11 +204,6 @@
       T(pg, p.declNasc, 433, B + 74.8, 8, 130);
       T(pg, p.mae, 177, B + 100.4, 8.5, 385);
     });
-    if (opts.carimbo) {
-      var st = await out.embedPng(opts.carimbo);
-      var h = 82, w = h * st.width / st.height;
-      c2.drawImage(st, { x: 116.7 - w / 2, y: c2.getHeight() - 426, width: w, height: h });
-    }
 
     // ---------- Documentos anexados ----------
     for (var a = 0; a < (opts.anexos || []).length; a++) {

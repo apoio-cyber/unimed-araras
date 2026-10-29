@@ -77,11 +77,6 @@
     var opcao = { opto: 515.4, naoOpto: 529.1 }[d.opcao];
     if (opcao) X(p, 106.6, opcao);
 
-    if (opts.carimbo) {
-      var st = await out.embedPng(opts.carimbo);
-      var h = 56, w = h * st.width / st.height;
-      p.drawImage(st, { x: 182, y: p.getHeight() - 690, width: w, height: h });
-    }
 
     // ---------- CAD001 - Termo de ciência ----------
     if (d.incluirTermo) {

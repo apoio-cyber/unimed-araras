@@ -3,7 +3,7 @@
 Formulário web que gera, em um único PDF, a **Carta de Orientação + Declaração de Saúde** e a **Ficha de Cadastro** da Unimed Anhanguera já preenchidas para inclusão de colaboradores da Cucinare Pro Alimentação Ltda.
 
 - Todo o processamento acontece no navegador: nenhum dado do colaborador é enviado para servidores.
-- O carimbo da empresa **não fica no repositório**: é carregado uma vez em cada computador pelo botão **Carimbo da empresa** e fica salvo apenas naquele navegador.
+- Nenhuma assinatura ou carimbo é inserido: a empresa (Cucinare) e o intermediário assinam no papel e a documentação é digitalizada.
 - A assinatura do intermediário (Wlademir) não é incluída: o campo sai em branco para ele assinar ao receber o formulário (nome e CPF já vêm preenchidos).
 
 ## Regras aplicadas

@@ -3,7 +3,6 @@
   'use strict';
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
-  var LS_STAMP = 'unimed_carimbo_empresa';
   var MAX_DEP = 5;
   var trctArquivo = null, outros = [], depSeq = 1;
 
@@ -35,7 +34,6 @@
   }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   function tipoArquivo(f) { return /pdf$/i.test(f.type) || /\.pdf$/i.test(f.name) ? 'pdf' : (/png/i.test(f.type) ? 'png' : 'jpg'); }
-  function bytesDataUrl(u) { var b = atob(u.split(',')[1]), a = new Uint8Array(b.length); for (var i = 0; i < b.length; i++) a[i] = b.charCodeAt(i); return a; }
 
   var dataCom = hoje();
   $('#exDataCom').value = dataCom.slice(0, 6) + dataCom.slice(8); // dd/mm/aa
@@ -138,8 +136,6 @@
     if (tipo === 'desligamento' && !radio('exApos')) erros.push('Informe se permaneceu na empresa após aposentadoria contribuindo para o plano');
     if (!radio('exContrib')) { erros.push('Escolha a forma de contribuição para o plano'); marca('#exContrib'); }
     if (tipo === 'desligamento' && !radio('exOpcao')) { erros.push('Informe a opção do titular (opto / não opto)'); marca('#exOpcao'); }
-    var stamp = null; try { stamp = localStorage.getItem(LS_STAMP); } catch (e) { }
-    if (!stamp) erros.push('Carimbo da empresa não configurado neste computador (botão "Carimbo da empresa" no topo)');
     return erros;
   }
 
@@ -149,7 +145,6 @@
     if (erros.length) {
       box.innerHTML = '<b>Corrija antes de gerar:</b><ul>' + erros.map(function (e) { return '<li>' + esc(e) + '</li>'; }).join('') + '</ul>';
       box.hidden = false; box.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      if (/Carimbo/.test(erros.join())) $('#secConfig').hidden = false;
       return;
     }
     box.hidden = true;
@@ -168,7 +163,7 @@
       for (var i = 0; i < outros.length; i++) anexos.push({ tipo: tipoArquivo(outros[i]), titulo: outros[i].name, bytes: new Uint8Array(await outros[i].arrayBuffer()) });
       var avisos = [];
       var bytes = await Exclusao.gerar({
-        PDFLib: PDFLib, cad006: mod[0], cad001: mod[1], carimbo: bytesDataUrl(localStorage.getItem(LS_STAMP)),
+        PDFLib: PDFLib, cad006: mod[0], cad001: mod[1],
         anexos: anexos, onAviso: function (m) { avisos.push(m); },
         dados: {
           tipo: radio('exTipo'),

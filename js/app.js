@@ -3,7 +3,6 @@
   'use strict';
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var MAX_DEP = 3;
-  var LS_STAMP = 'unimed_carimbo_empresa';
 
   var EST_CIVIL = ['Solteiro(a)', 'Casado(a)', 'União estável', 'Divorciado(a)', 'Separado(a)', 'Viúvo(a)'];
   var PARENTESCO = ['Cônjuge', 'Companheiro(a)', 'Filho(a)', 'Enteado(a)', 'Outro'];
@@ -353,60 +352,6 @@
     r.addEventListener('change', function () { $('#avisoMedico').hidden = r.value === 'dispensar'; });
   });
 
-  // ---------------- assinaturas (salvas no navegador) ----------------
-  function processarImagem(file) {
-    return new Promise(function (ok, erro) {
-      var img = new Image();
-      img.onload = function () {
-        var maxW = 700, sc = Math.min(1, maxW / img.width);
-        var cv = document.createElement('canvas');
-        cv.width = Math.round(img.width * sc); cv.height = Math.round(img.height * sc);
-        var cx = cv.getContext('2d'); cx.drawImage(img, 0, 0, cv.width, cv.height);
-        var d = cx.getImageData(0, 0, cv.width, cv.height), px = d.data;
-        // estima a cor do papel (percentil 80 da luminosidade) para remover o fundo
-        var hist = new Array(256).fill(0), n = px.length / 4;
-        for (var j = 0; j < px.length; j += 4) hist[Math.round((px[j] + px[j + 1] + px[j + 2]) / 3)]++;
-        var acc = 0, papel = 235;
-        for (var v = 0; v < 256; v++) { acc += hist[v]; if (acc >= n * 0.8) { papel = v; break; } }
-        var branco = Math.max(140, papel - 12), tinta = Math.max(40, branco - 110);
-        for (var i = 0; i < px.length; i += 4) {
-          var lum = (px[i] + px[i + 1] + px[i + 2]) / 3;
-          px[i + 3] = Math.max(0, Math.min(255, (branco - lum) / (branco - tinta) * 255));
-        }
-        cx.putImageData(d, 0, 0);
-        ok(cv.toDataURL('image/png'));
-      };
-      img.onerror = function () { erro(new Error('Imagem inválida')); };
-      img.src = URL.createObjectURL(file);
-    });
-  }
-  function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
-  function lsSet(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { alert('Não foi possível salvar a imagem neste navegador.'); return false; } }
-  function statusCfg() {
-    var b = !!lsGet(LS_STAMP);
-    $('#cfgStatus').textContent = b ? 'configurado ✓' : 'pendente';
-    $('#prevStamp').src = lsGet(LS_STAMP) || '';
-    return b;
-  }
-  $('#btnConfig').onclick = function () { $('#secConfig').hidden = !$('#secConfig').hidden; };
-  $('#cfgFechar').onclick = function () { $('#secConfig').hidden = true; };
-  $('#cfgLimpar').onclick = function () {
-    if (!confirm('Remover o carimbo salvo neste computador?')) return;
-    try { localStorage.removeItem(LS_STAMP); localStorage.removeItem('unimed_assinatura_intermediario'); } catch (e) { }
-    statusCfg();
-  };
-  [['#cfgStamp', LS_STAMP]].forEach(function (x) {
-    $(x[0]).onchange = function (e) {
-      var f = e.target.files[0]; if (!f) return;
-      processarImagem(f).then(function (url) { lsSet(x[1], url); statusCfg(); }).catch(function (er) { alert(er.message); });
-    };
-  });
-  function dataUrlBytes(u) {
-    var b = atob(u.split(',')[1]), a = new Uint8Array(b.length);
-    for (var i = 0; i < b.length; i++) a[i] = b.charCodeAt(i);
-    return a;
-  }
-
   // ---------------- validação ----------------
   function validar(P) {
     var erros = [];
@@ -453,7 +398,6 @@
     if (semResp) erros.push('Declaração de saúde: ' + semResp + ' resposta(s) em branco (destacadas em vermelho)');
     if (semDet) erros.push('Declaração de saúde: há respostas "S" sem doença, tratamento ou diagnóstico (mês/ano) completos');
     if (!document.querySelector('input[name=orient]:checked')) erros.push('Orientação médica: escolha uma opção');
-    if (!statusCfg()) erros.push('Carimbo da empresa não configurado neste computador (botão "Carimbo da empresa" no topo)');
     return erros;
   }
 
@@ -470,7 +414,6 @@
     if (erros.length) {
       box.innerHTML = '<b>Corrija antes de gerar:</b><ul>' + erros.map(function (e) { return '<li>' + esc(e) + '</li>'; }).join('') + '</ul>';
       box.hidden = false; box.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      if (/Carimbo/.test(erros.join())) $('#secConfig').hidden = false;
       return;
     }
     box.hidden = true;
@@ -509,7 +452,6 @@
       var avisos = [];
       var bytes = await Preencher.gerar({
         PDFLib: PDFLib, declaracao: modelos[0], cadastro: modelos[1], perguntas: PERGUNTAS,
-        carimbo: dataUrlBytes(lsGet(LS_STAMP)),
         anexos: anexos, onAviso: function (m) { avisos.push(m); },
         dados: {
           dataPreenchimento: $('#dataPreench').value, pessoas: pdfPessoas, respostas: respostas,
@@ -538,8 +480,7 @@
   montarCampos($('#titular'), CAMPOS_TIT, 't_');
   $('#dataPreench').value = hojeStr();
   $('#btnAddDep').onclick = addDep;
-  try { localStorage.removeItem('unimed_assinatura_intermediario'); } catch (e) { }
-  statusCfg();
-  if (!statusCfg()) $('#secConfig').hidden = false;
+  // assinaturas não são usadas: apaga imagens que tenham ficado salvas em versões anteriores
+  try { localStorage.removeItem('unimed_assinatura_intermediario'); localStorage.removeItem('unimed_carimbo_empresa'); } catch (e) { }
   atualizarTudo();
 })();
