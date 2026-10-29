@@ -127,9 +127,7 @@
     r.causa = valor(rotulo(/Causa\s+do\s+Afastamento/i, itens));
     r.codigo = valor(rotulo(/C[óo]d(igo|\.)?\s+(de\s+|do\s+)?Afastamento/i, itens), /\b([A-Z]{2}\d)\b/);
     var c = (r.causa + ' ' + r.codigo).toLowerCase();
-    if (/aposentad/.test(c)) r.motivo = 'aposentadoria';
-    else if (/sem justa causa/.test(c) && !/pedido|empregado/.test(c) || /\bsj2\b/.test(c)) r.motivo = 'demissao';
-    else if (r.causa) r.motivo = 'outro';
+    r.motivo = classificarMotivo(c) || (r.causa ? 'outro' : '');
 
     if (r.admissao && r.afastamento) {
       var a = r.admissao.split('/'), b = r.afastamento.split('/');
@@ -139,6 +137,19 @@
     return r;
   }
 
+  // Classifica a causa do afastamento do TRCT nas opções da planilha CAD006.
+  // Aceita abreviações dos sistemas de folha: "s/ justa causa", "Inic.Empresa", "Desp." etc.
+  function classificarMotivo(c) {
+    c = (c || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    if (/aposentad/.test(c)) return 'aposentadoria';
+    var semJusta = /\b(sem|s\/|s\.)\s*justa\s*causa/.test(c);
+    var peloEmpregador = /empres|empregador|desped|despedid|dispens|demiss|exonera/.test(c);
+    var peloEmpregado = /pedido|empregado|trabalhador|indireta|a pedido/.test(c);
+    if (semJusta && (peloEmpregador || !peloEmpregado)) return 'demissao';
+    if (/\b(sj2|i1)\b/.test(c)) return 'demissao';
+    return '';
+  }
+
   async function extrair(bytes) {
     var pdfjs = await carregarPdfJs();
     var itens = await itensDoPdf(bytes, pdfjs);
@@ -146,6 +157,6 @@
     return analisar(itens);
   }
 
-  var api = { extrair: extrair, analisar: analisar, _juntar: juntarLinhas };
+  var api = { extrair: extrair, analisar: analisar, _juntar: juntarLinhas, classificarMotivo: classificarMotivo };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.TRCT = api;
 })(typeof window !== 'undefined' ? window : globalThis);
