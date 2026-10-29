@@ -31,7 +31,25 @@
       });
       off += vp.height + 50;
     }
-    return itens;
+    return juntarLinhas(itens);
+  }
+
+  // O PDF costuma quebrar um mesmo texto em vários pedaços (ex.: cada palavra do nome).
+  // Junta pedaços vizinhos na mesma linha.
+  function juntarLinhas(itens) {
+    itens.sort(function (a, b) { return Math.round(a.y) - Math.round(b.y) || a.x - b.x; });
+    var out = [];
+    itens.forEach(function (it) {
+      var ult = out[out.length - 1];
+      var gap = ult ? it.x - (ult.x + ult.w) : 99;
+      var mesmaLinha = ult && Math.abs(it.y - ult.y) <= 1.5;
+      var rotuloNovo = /^\d{1,3}\s+[A-ZÀ-Ú]/i.test(it.s); // ex.: "13 Bairro"
+      if (mesmaLinha && gap > -1 && gap < 7 && !rotuloNovo) {
+        ult.s = (ult.s + (gap > 0.8 ? ' ' : '') + it.s).replace(/\s+/g, ' ');
+        ult.w = it.x + it.w - ult.x;
+      } else out.push({ s: it.s, x: it.x, y: it.y, w: it.w });
+    });
+    return out;
   }
 
   var RE_DATA = /\b(\d{2}\/\d{2}\/\d{4})\b/;
@@ -46,13 +64,19 @@
     itens.forEach(function (it) { if (!ini && /IDENTIFICA[ÇC][ÃA]O\s+DO\s+TRABALHADOR|^TRABALHADOR$/i.test(it.s)) ini = it.y; });
     var trab = itens.filter(function (it) { return it.y >= ini - 2; });
 
-    function rotulo(re, lista) { return (lista || trab).filter(function (it) { return re.test(it.s); })[0]; }
+    function rotulo(re, lista) {
+      var it = (lista || trab).filter(function (i) { return re.test(i.s); })[0];
+      if (!it) return it;
+      var m = re.exec(it.s);
+      var depois = it.s.slice(m.index + m[0].length).replace(/^[\s:.\-]+/, '').replace(/^\([^)]*\)\s*/, '');
+      return Object.assign({}, it, { resto: /^\d{1,3}\s+[A-ZÀ-Ú]/i.test(depois) ? '' : depois, _orig: it });
+    }
 
     // valor do campo: o texto logo abaixo do rótulo (ou à direita, na mesma linha)
     function valor(lab, padrao) {
       if (!lab) return '';
       var cand = itens.filter(function (it) {
-        if (it === lab) return false;
+        if (it === lab || it === lab._orig) return false;
         var dy = it.y - lab.y, dx = it.x - lab.x;
         var abaixo = dy > 2 && dy < 26 && dx > -20 && dx < 220;
         var direita = Math.abs(dy) <= 2 && dx > lab.w - 2 && dx < lab.w + 260;
@@ -65,8 +89,10 @@
         return pa - pb;
       });
       var v = cand[0] ? cand[0].s : '';
+      // valor escrito no mesmo pedaço do rótulo (ex.: "11 Nome JOSE DA SILVA")
+      var resto = lab.resto || '';
       if (padrao) { var m = padrao.exec(lab.s) || padrao.exec(v); return m ? (m[1] || m[0]) : ''; }
-      return v;
+      return resto.length >= 2 && (!v || resto.length >= v.length) ? resto : v;
     }
 
     var tudo = trab.map(function (i) { return i.s; }).join(' | ');
@@ -76,7 +102,7 @@
     r.cpf = valor(labCpf, RE_CPF) || ((RE_CPF.exec(tudo) || [])[1] || '');
 
     // Nome
-    var labNome = rotulo(/^(11\s*)?Nome(\s+do\s+Trabalhador)?:?$/i) || rotulo(/^11\s+Nome\b/i);
+    var labNome = rotulo(/^(11\s*)?Nome(\s+do\s+(Trabalhador|Empregado))?:?(?=\s|$)/i) || rotulo(/^11\s+Nome\b/i);
     r.nome = valor(labNome).replace(/^nome:?\s*/i, '');
     if (/^\d|CPF|PIS/i.test(r.nome)) r.nome = '';
 
@@ -85,8 +111,11 @@
     var end = valor(labEnd);
     var bairro = valor(rotulo(/^(13\s*)?Bairro/i));
     var mun = valor(rotulo(/^(14\s*)?Munic[íi]pio/i));
-    var uf = valor(rotulo(/^(15\s*)?UF$/i));
-    var cep = valor(rotulo(/^(16\s*)?CEP/i), /(\d{5}-?\d{3})/);
+    var uf = valor(rotulo(/^(15\s*)?UF(?=\s|$)/i)); if (!/^[A-Z]{2}$/i.test(uf)) uf = '';
+    var RE_CEP = /(\d{2}\.?\d{3}\s?-?\s?\d{3})(?!\d)/;
+    var cep = valor(rotulo(/^(16\s*)?CEP/i), RE_CEP) || ((/CEP\s*:?\s*\|?\s*(\d{2}\.?\d{3}\s?-?\s?\d{3})(?!\d)/i.exec(tudo) || [])[1] || '');
+    cep = cep.replace(/\D/g, ''); cep = cep.length === 8 ? cep.slice(0, 5) + '-' + cep.slice(5) : '';
+    r.cep = cep;
     var partes = [end, bairro, mun && (mun + (uf ? '/' + uf : '')), cep && ('CEP ' + cep)].filter(function (x) { return x && !/^\d{1,2}\s/.test(x); });
     r.endereco = partes.join(' - ');
 
@@ -117,6 +146,6 @@
     return analisar(itens);
   }
 
-  var api = { extrair: extrair, analisar: analisar };
+  var api = { extrair: extrair, analisar: analisar, _juntar: juntarLinhas };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.TRCT = api;
 })(typeof window !== 'undefined' ? window : globalThis);
