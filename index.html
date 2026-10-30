@@ -5,6 +5,35 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Movimentação Unimed Araras</title>
 <link rel="stylesheet" href="css/estilo.css">
+<!-- prefill-sistema: lê o link antes da página trocar o endereço -->
+<script>
+/* Preenchimento automático vindo do sistema de movimentações (aba Consultar vidas).
+   O link traz ?pre=1&nome=&cpf=&cart=&nasc=&mae=&adm=&end=&tel=&cidade=&dem=&mot= */
+(function () {
+  var q = new URLSearchParams(location.search);
+  if (q.get('pre') !== '1') return;
+  window.PRE = {
+    get: function (k) { return (q.get(k) || '').trim(); },
+    br: function (iso) { var m = String(iso || '').match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? m[3] + '/' + m[2] + '/' + m[1] : (iso || ''); },
+    set: function (sel, v) {
+      var e = typeof sel === 'string' ? document.querySelector(sel) : sel;
+      if (!e || v == null || v === '') return;
+      e.value = v; e.dispatchEvent(new Event('input', { bubbles: true })); e.dispatchEvent(new Event('change', { bubbles: true }));
+    },
+    radio: function (name, val) {
+      var r = document.querySelector('input[name="' + name + '"][value="' + val + '"]');
+      if (r) { r.checked = true; r.dispatchEvent(new Event('change', { bubbles: true })); r.dispatchEvent(new Event('click', { bubbles: true })); }
+    },
+    aviso: function () {
+      var d = document.createElement('div');
+      d.setAttribute('role', 'status');
+      d.style.cssText = 'position:fixed;left:50%;top:12px;transform:translateX(-50%);z-index:9999;background:#e1f0f8;color:#0d2a3d;border:1px solid #9cc9e6;border-radius:10px;padding:10px 14px;font:600 14px/1.4 system-ui,sans-serif;box-shadow:0 6px 20px rgba(0,0,0,.15);max-width:92vw';
+      d.textContent = 'Dados preenchidos a partir da base de vidas ativas. Confira, anexe o TRCT se tiver e complete o que faltar.';
+      document.body.appendChild(d); setTimeout(function () { d.remove(); }, 9000);
+    }
+  };
+})();
+</script>
 </head>
 <body>
 <header class="topo">
@@ -202,5 +231,21 @@
 <script src="js/trct.js"></script>
 <script src="js/app-exclusao.js"></script>
 <script src="js/cep.js"></script>
+<!-- prefill-sistema -->
+<script>
+
+window.addEventListener('load', function () { setTimeout(function () {
+  if (!window.PRE) return; var P = PRE;
+  var b = document.querySelector('.modo[data-modo="exclusao"]'); if (b) b.click();
+  setTimeout(function () {
+    P.radio('exTipo', P.get('mot') === 'pedido' ? 'iniciativa' : 'desligamento');
+    P.set('#exNome', P.get('nome').toUpperCase()); P.set('#exCpf', P.get('cpf'));
+    P.set('#exEndereco', P.get('end').toUpperCase()); P.set('#exCelular', P.get('tel'));
+    if (P.get('dem')) P.set('#exData', P.br(P.get('dem')));
+    if (P.get('mot') === 'sem_justa_causa') P.radio('exMotivo', 'demissao');
+    P.aviso();
+  }, 200);
+}, 300); });
+</script>
 </body>
 </html>
